@@ -17,10 +17,14 @@ import datetime
 
 
 def show_results():
+    # Processed results ------------------------------------
     st.session_state.contador_testing = 1
     st.success('Testing performed successfully!')
-    df = pd.read_excel("./data/reports/ABS_v1_report.xlsx",
-                       engine='openpyxl', header=None)
+    df = pd.read_excel("./data/processed/ABS_v1_report.xlsx",
+                       engine='openpyxl', header=0)
+
+    df = pd.read_excel("./data/processed/ABS_v1_report.xlsx",
+                       engine='openpyxl', header=0)
     # To show a DataFrame with modification allowed
     df = st.data_editor(df)
 
@@ -30,7 +34,13 @@ def show_results():
         file_name='report.csv'
     )
 
-    st.info('GRAPHICS')
+    counts = df['Verdict'].value_counts().reset_index()
+
+    color_map = {'Passed': 'green', 'Failed': 'red', 'Not_Applicable': 'gray'}
+    fig_pie = px.pie(df, names='Verdict', color='Verdict',
+                     title='Verdict Distribution', color_discrete_map=color_map)
+    fig_pie.update_traces(textinfo='percent+value+label')
+    st.plotly_chart(fig_pie, use_container_width=True)
     return
 
 
@@ -60,12 +70,13 @@ def testing_page():
 
     else:
         st.session_state.contador_testing = 0
+    return
 
 
 def show_metrics(df):
     st.subheader('Metrics for tested features')
 
-    # Group by 'Feature' and obtain the total passed, failed
+    # Group by 'Feature' and obtain the total passed, failed, not applicable
     df_feature = df.groupby(
         'Feature')[['Passed', 'Failed', 'Not_Applicable']].sum()
 
@@ -108,19 +119,29 @@ def metrics_page():
     else:
         df_metrics = df[df['Date'] >= date]
 
-    # DataFrame
+    # DataFrame filtered
     st.write(df_metrics)
-
     show_metrics(df_metrics)
-
     return
 
 
-# Page configuration
+# Page configuration ----------------------------------------------------
 img = Image.open("./images/image.png")
 st.set_page_config(page_title="HIL Component Tool", layout="centered",
                    page_icon=img)
 
 
-# testing_page()
-metrics_page()
+# Sidebar -----------------------------------------------
+st.sidebar.header("Sidebar header")
+
+# Selectbox
+st.sidebar.header('Selectbox')
+selectbox_option = st.sidebar.selectbox(
+    label="Select an option",
+    options=['Testing', 'Metrics']
+)
+
+if selectbox_option == 'Testing':
+    testing_page()
+else:
+    metrics_page()
