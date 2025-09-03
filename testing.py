@@ -11,6 +11,7 @@ import plotly.express as px
 import numpy as np
 from PIL import Image
 import openpyxl
+import datetime
 
 # button2 = st.button(label="Button 2")
 
@@ -34,6 +35,9 @@ def show_results():
 
 
 def testing_page():
+    # Title
+    st.title("Testing")
+
     # Load Excel file------------------------------------------
     st.header("Load FTS", divider="gray")
 
@@ -58,12 +62,65 @@ def testing_page():
         st.session_state.contador_testing = 0
 
 
+def show_metrics(df):
+    st.subheader('Metrics for tested features')
+
+    # Group by 'Feature' and obtain the total passed, failed
+    df_feature = df.groupby(
+        'Feature')[['Passed', 'Failed', 'Not_Applicable']].sum()
+
+    st.write(df_feature)
+
+    color_map = {'Passed': 'green', 'Failed': 'red', 'Not_Applicable': 'gray'}
+    fig_bar = px.bar(
+        df_feature, title='Total TestCases by Feature', color_discrete_map=color_map)
+    st.plotly_chart(fig_bar, use_container_width=True)
+    return
+
+
+def metrics_page():
+    # Title
+    st.title("Metrics")
+
+    # Read DataFrame
+    df = pd.read_csv(
+        './data/processed/testing_results.csv', sep='\t', header=0)
+
+    # Date
+    date = (st.date_input("From date:", value=datetime.date(
+        2025, 9, 1))).strftime('%d-%m-%Y')
+    st.write(f"Filtered from date:")
+    st.write(date)
+
+    # Feature
+    feature = ['All'] + list(df['Feature'].unique())
+
+    feature_option = st.selectbox(
+        label="Feature:",
+        options=feature
+    )
+    st.write(f"Filtered by feature:")
+    st.write(feature_option)
+
+    if feature_option != 'All':
+        df_metrics = df[(df['Date'] >= date) & (
+            df['Feature'] == feature_option)]
+    else:
+        df_metrics = df[df['Date'] >= date]
+
+    # DataFrame
+    st.write(df_metrics)
+
+    show_metrics(df_metrics)
+
+    return
+
+
 # Page configuration
 img = Image.open("./images/image.png")
-st.set_page_config(page_title="HIL Component Tool", layout="wide",
+st.set_page_config(page_title="HIL Component Tool", layout="centered",
                    page_icon=img)
 
 
-# Title
-st.title("Testing")
-testing_page()
+# testing_page()
+metrics_page()
