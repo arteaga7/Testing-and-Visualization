@@ -13,8 +13,6 @@ from PIL import Image
 import openpyxl
 import datetime
 
-# button2 = st.button(label="Button 2")
-
 
 def show_results():
     # Processed results ------------------------------------
@@ -33,8 +31,6 @@ def show_results():
         data=df.to_csv(sep='\t', index=False),
         file_name='report.csv'
     )
-
-    counts = df['Verdict'].value_counts().reset_index()
 
     color_map = {'Passed': 'green', 'Failed': 'red', 'Not_Applicable': 'gray'}
     fig_pie = px.pie(df, names='Verdict', color='Verdict',
@@ -125,19 +121,18 @@ def metrics_page():
     return
 
 
-# Page configuration ----------------------------------------------------
+# Page configuration ---------------------------------------------------
 img = Image.open("./images/image.png")
-st.set_page_config(page_title="HIL Component Tool", layout="centered",
+st.set_page_config(page_title="HIL Component Tool", layout="wide",
                    page_icon=img)
 
 
-# Sidebar -----------------------------------------------
-st.sidebar.header("Sidebar header")
+# Sidebar --------------------------------------------------------------
+st.sidebar.header("HIL Component Tool")
 
 # Selectbox
-st.sidebar.header('Selectbox')
 selectbox_option = st.sidebar.selectbox(
-    label="Select an option",
+    label="Select a page",
     options=['Testing', 'Metrics']
 )
 
@@ -145,3 +140,4 @@ if selectbox_option == 'Testing':
     testing_page()
 else:
     metrics_page()
+# Sidebar --------------------------------------------------------------
