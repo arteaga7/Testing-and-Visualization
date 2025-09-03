@@ -1,6 +1,6 @@
 '''
-This script displays some graphics and buttons using Streamlit library.
-This applications is launched on a web server (render.com) with the following link:
+This project displays some graphics and buttons using Streamlit library.
+This applications is ldeployed on a web server (render.com) with the following link:
 
 '''
 
@@ -21,22 +21,25 @@ def show_results():
     df = pd.read_excel("./data/processed/ABS_v1_report.xlsx",
                        engine='openpyxl', header=0)
 
-    df = pd.read_excel("./data/processed/ABS_v1_report.xlsx",
-                       engine='openpyxl', header=0)
-    # To show a DataFrame with modification allowed
-    df = st.data_editor(df)
+    # Two columns -------------------------------------------
+    col1, col2 = st.columns(2)
+    with col1:
+        # To show a DataFrame with modification allowed
+        df = st.data_editor(df)
 
-    st.download_button(
-        label="Download file",
-        data=df.to_csv(sep='\t', index=False),
-        file_name='report.csv'
-    )
-
-    color_map = {'Passed': 'green', 'Failed': 'red', 'Not_Applicable': 'gray'}
-    fig_pie = px.pie(df, names='Verdict', color='Verdict',
-                     title='Verdict Distribution', color_discrete_map=color_map)
-    fig_pie.update_traces(textinfo='percent+value+label')
-    st.plotly_chart(fig_pie, use_container_width=True)
+        st.download_button(
+            label="Download file",
+            data=df.to_csv(sep='\t', index=False),
+            file_name='report.csv'
+        )
+    with col2:
+        color_map = {'Passed': 'green',
+                     'Failed': 'red', 'Not_Applicable': 'gray'}
+        fig_pie = px.pie(df, names='Verdict', color='Verdict',
+                         title='Verdict Distribution', color_discrete_map=color_map)
+        fig_pie.update_traces(textinfo='percent+value+label')
+        st.plotly_chart(fig_pie, use_container_width=True)
+    # End Two columns --------------------------------------
     return
 
 
@@ -85,6 +88,34 @@ def show_metrics(df):
     return
 
 
+def two_columns(df):
+    col1, col2 = st.columns(2)
+    with col1:
+        # Date
+        date = (st.date_input("From date:", value=datetime.date(
+            2025, 9, 1))).strftime('%d-%m-%Y')
+        st.write(f"Filtered from date:")
+        st.write(date)
+    with col2:
+        # Feature
+        feature = ['All'] + list(df['Feature'].unique())
+
+        feature_option = st.selectbox(
+            label="Feature:",
+            options=feature
+        )
+        st.write(f"Filtered by feature:")
+        st.write(feature_option)
+
+    if feature_option != 'All':
+        df_metrics = df[(df['Date'] >= date) & (
+            df['Feature'] == feature_option)]
+    else:
+        df_metrics = df[df['Date'] >= date]
+
+    return df_metrics
+
+
 def metrics_page():
     # Title
     st.title("Metrics")
@@ -93,27 +124,9 @@ def metrics_page():
     df = pd.read_csv(
         './data/processed/testing_results.csv', sep='\t', header=0)
 
-    # Date
-    date = (st.date_input("From date:", value=datetime.date(
-        2025, 9, 1))).strftime('%d-%m-%Y')
-    st.write(f"Filtered from date:")
-    st.write(date)
-
-    # Feature
-    feature = ['All'] + list(df['Feature'].unique())
-
-    feature_option = st.selectbox(
-        label="Feature:",
-        options=feature
-    )
-    st.write(f"Filtered by feature:")
-    st.write(feature_option)
-
-    if feature_option != 'All':
-        df_metrics = df[(df['Date'] >= date) & (
-            df['Feature'] == feature_option)]
-    else:
-        df_metrics = df[df['Date'] >= date]
+    # Two columns -------------------------------------------
+    df_metrics = two_columns(df)
+    # End Two columns ---------------------------------------
 
     # DataFrame filtered
     st.write(df_metrics)
@@ -132,7 +145,7 @@ st.sidebar.header("HIL Component Tool")
 
 # Selectbox
 selectbox_option = st.sidebar.selectbox(
-    label="Select a page",
+    label="Select page",
     options=['Testing', 'Metrics']
 )
 
