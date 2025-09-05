@@ -1,7 +1,7 @@
 '''
 This project displays some graphics and buttons using Streamlit library.
 This applications is ldeployed on a web server (render.com) with the following link:
-
+https://testing-and-visualization.onrender.com/
 '''
 
 import os
@@ -56,8 +56,14 @@ def testing_page():
     fts_file = st.file_uploader(
         "Choose an Excel file", type=["xlsx"]
     )
+    check_button = st.checkbox('Use default FTS file (for mobile application)')
+    if check_button:
+        st.write('Default FTS file selected.')
 
-    if fts_file is not None:
+    if fts_file is not None or check_button:
+        if check_button:
+            fts_file = './data/raw/FTS_ABS_v1.xlsx'
+
         df_fts = pd.read_excel(fts_file, engine='openpyxl', header=None)
         st.dataframe(df_fts, use_container_width=True)
 
