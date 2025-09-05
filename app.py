@@ -1,6 +1,6 @@
 '''
 This project displays some graphics and buttons using Streamlit library.
-This applications is ldeployed on a web server (render.com) with the following link:
+This applications is deployed on a web server (render.com) in the following link:
 https://testing-and-visualization.onrender.com/
 '''
 
@@ -13,8 +13,12 @@ from PIL import Image
 import openpyxl
 import datetime
 
+color_map = {'Passed': 'green',
+             'Failed': 'red',
+             'Not_Applicable': 'gray'}
 
-def show_results():
+
+def show_results() -> None:
     # Processed results ------------------------------------
     st.session_state.contador_testing = 1
     st.success('Testing performed successfully!')
@@ -33,8 +37,7 @@ def show_results():
             file_name='report.csv'
         )
     with col2:
-        color_map = {'Passed': 'green',
-                     'Failed': 'red', 'Not_Applicable': 'gray'}
+        # Pie chart
         fig_pie = px.pie(df, names='Verdict', color='Verdict',
                          title='Verdict Distribution', color_discrete_map=color_map)
         fig_pie.update_traces(textinfo='percent+value+label')
@@ -43,7 +46,7 @@ def show_results():
     return
 
 
-def testing_page():
+def testing_page() -> None:
     # Title
     st.title("Testing")
 
@@ -56,9 +59,15 @@ def testing_page():
     fts_file = st.file_uploader(
         "Choose an Excel file", type=["xlsx"]
     )
-    check_button = st.checkbox('Use default FTS file (for mobile application)')
+
+    if fts_file is None:
+        check_button = st.checkbox(
+            'Use default FTS file (for mobile application)')
+    else:
+        check_button = False
+
     if check_button:
-        st.write('Default FTS file selected.')
+        st.write('Default FTS "FTS_ABS_v1.xlsx" selected.')
 
     if fts_file is not None or check_button:
         if check_button:
@@ -78,7 +87,7 @@ def testing_page():
     return
 
 
-def show_metrics(df):
+def show_metrics(df) -> None:
     st.subheader('Metrics for tested features')
 
     # Group by 'Feature' and obtain the total passed, failed, not applicable
@@ -87,23 +96,23 @@ def show_metrics(df):
 
     st.write(df_feature)
 
-    color_map = {'Passed': 'green', 'Failed': 'red', 'Not_Applicable': 'gray'}
+    # Bar chart
     fig_bar = px.bar(
         df_feature, title='Total TestCases by Feature', color_discrete_map=color_map)
     st.plotly_chart(fig_bar, use_container_width=True)
     return
 
 
-def two_columns(df):
+def two_columns(df) -> pd.DataFrame:
     col1, col2 = st.columns(2)
     with col1:
-        # Date
+        # Filter by Date ----------------------------------
         date = (st.date_input("From date:", value=datetime.date(
             2025, 9, 1))).strftime('%d-%m-%Y')
         st.write(f"Filtered from date:")
         st.write(date)
     with col2:
-        # Feature
+        # Filter by Feature -------------------------------
         feature = ['All'] + list(df['Feature'].unique())
 
         feature_option = st.selectbox(
@@ -122,7 +131,7 @@ def two_columns(df):
     return df_metrics
 
 
-def metrics_page():
+def metrics_page() -> None:
     # Title
     st.title("Metrics")
 
